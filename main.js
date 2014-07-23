@@ -79,7 +79,12 @@
       loadQuestion(currentQuestion);
     });
     var hashLoad = function() {
-      window.location.hash = window.location.hash || 0;
+      if (window.location.hash === '' && typeof localStorage.getItem('lasthash') === 'string') {
+        window.location.hash = localStorage.getItem('lasthash');
+      } else {
+        window.location.hash = window.location.hash || 0;
+      }
+      localStorage.setItem('lasthash', window.location.hash);
       currentQuestion = data[window.location.hash.slice(1)];
       if (!currentQuestion) {
         currentQuestion = data[0];
