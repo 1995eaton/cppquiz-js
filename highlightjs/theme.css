@@ -1,0 +1,16 @@
+.hljs {
+  background-color: #1c1c1c;
+  color: #bcbcbc;
+}
+.cppkeyword {
+  color: #ff005f;
+}
+.cppnumber {
+  color: #af5fff;
+}
+.cppstring {
+  color: #ffd787;
+}
+.cpppreprocessor {
+  color: #afff00;
+}

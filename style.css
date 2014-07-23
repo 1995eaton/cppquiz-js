@@ -1,0 +1,50 @@
+body, html {
+  font-family: Helvetica, "Helvetica Neue", Neue, sans-serif;
+}
+
+#content, #content-backdrop {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  left: 0; right: 0;
+  width: 800px;
+  box-sizing: border-box;
+  padding: 25px;
+  margin: 0 auto;
+}
+#content-backdrop {
+  position: fixed;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+#code {
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 9pt;
+}
+#question-title {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 12pt;
+}
+#question-title a {
+  float: right;
+  margin-left: 5px;
+}
+#choice-container {
+  display: block;
+}
+#choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+#choices li {
+  margin-top: 5px;
+}
+#choices li:last-child {
+  margin-top: 20px;
+}
+#answer-input {
+  margin-top: 10px;
+  width: 35px;
+}

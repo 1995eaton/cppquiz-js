@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>C++ Quiz</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="highlightjs/style.css">
+  <link rel="stylesheet" href="highlightjs/theme.css">
+  <script src="highlightjs/highlight.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var script = document.createElement('script');
+      script.src = "main.js";
+      document.head.appendChild(script);
+    });
+  </script>
+</head>
+<body>
+  <div id="content-backdrop"></div>
+  <div id="content">
+    <div id="question-title">
+      Question <select id="question-number"></select> (difficulty: <span id="difficulty"></span>)
+      <a href="javascript:void 0" id="next-question">next</a>
+      <a href="javascript:void 0" id="previous-question">previous</a>
+    </div>
+    <pre><code class="cpp" id="code"></code></pre>
+    <div id="choice-container">
+      <ul id="choices">
+        <li>
+          <input name="answer" type="radio" checked>This is compilable and deterministic and the output is
+          <input type="text" id="answer-input">
+        </li>
+        <li>
+          <input name="answer" type="radio">This has a compilation error
+        </li>
+        <li>
+          <input name="answer" type="radio">This is undefined
+        </li>
+        <li>
+          <button id="check-answer">Check answer</button>
+          <button id="show-answer">Show answer</button>
+          <span id="is-correct"></span>
+        </li>
+      </ul>
+    </div>
+    <div id="answer-container">
+      <h2>Answer</h2>
+      <div id="answer"></div>
+      <h2>Explanation</h2>
+      <div id="reason"></div>
+    </div>
+  </div>
+</body>
+</html>

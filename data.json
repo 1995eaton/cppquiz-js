@@ -1,0 +1,394 @@
+[
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n  int i = 42;\n  int j = 1;\n  std::cout << i / --j;\n}\n\n",
+    "answer": "This question is undefined.",
+    "output": "",
+    "reason": "\n<p>Integer division by zero is undefined behaviour. According to <em>§5.6.4</em> in the standard: \"If the second operand of / or % is zero the behavior is undefined.\"</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n#include <limits>\n\nint main() {\n  unsigned int i = std::numeric_limits<unsigned int>::max();\n  std::cout << ++i;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"0\".",
+    "output": "0",
+    "reason": "\n<p>Unsigned integers have well defined behaviour when they overflow. When you go one above the largest representable unsigned int, you end up back at zero.</p>\n\n<p>According to <em>§3.9.1.4</em> in the C++ standard: \"Unsigned integers, declared unsigned, shall obey the laws of arithmetic modulo 2^n where n is the number of bits in the value representation of that particular size of integer.\"<br></p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n  for (int i = 0; i < 3; i++)\n    std::cout << i;\n  for (int i = 0; i < 3; ++i)\n    std::cout << i;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"012012\".",
+    "output": "012012",
+    "reason": "\n<p>Whether you post-increment or pre-increment i, its value does not change until after the loop body has executed.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  void f() { std::cout << \"A\"; }\n};\n\nclass B : public A {\npublic:\n  void f() { std::cout << \"B\"; }\n};\n\nvoid g(A &a) { a.f(); }\n\nint main() {\n  B b;\n  g(b);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"A\".",
+    "output": "A",
+    "reason": "\n<p>As long as <code>A::f()</code> is not virtual, <code>A::f()</code> will always be called, even if the reference or pointer is actually referring to an object of type <code>B</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  virtual void f() { std::cout << \"A\"; }\n};\n\nclass B : public A {\npublic:\n  void f() { std::cout << \"B\"; }\n};\n\nvoid g(A a) { a.f(); }\n\nint main() {\n  B b;\n  g(b);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"A\".",
+    "output": "A",
+    "reason": "\n<p><code>g(A a)</code> takes an object of type <code>A</code> by value, not by reference or pointer. This means that <code>A'</code>s copy constructor is called on the object passed to <code>g()</code> (no matter if the object we passed was of type <code>B</code>), and we get a brand new object of type <code>A</code> inside <code>g()</code>. This is commonly referred to as slicing.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint f(int &a, int &b) {\n  a = 3;\n  b = 4;\n  return a + b;\n}\n\nint main() {\n  int a = 1;\n  int b = 2;\n  int c = f(a, a);\n  std::cout << a << b << c;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"428\".",
+    "output": "428",
+    "reason": "\n<p>When <code>f()</code> is called with <code>a</code> as both parameters,  both arguments refer to the same variable. This is known as aliasing. First, <code>a</code> is set to <code>3</code>, then <code>a</code> is set to <code>4</code>, then <code>4+4</code> is returned. <code>b</code> is never modified.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint a;\n\nint main () {\n    std::cout << a;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"0\".",
+    "output": "0",
+    "reason": "\n<p>Since <code>a</code> has static storage duration and no initializer, it is guaranteed to be zero-initialized. Had <code>a</code> been defined as a local non-static variable inside <code>main()</code>, this would not have happened.</p>\n\n<p>Note: <code>int a</code> has static storage duration because it is declared at namespace scope. It does not need to have <code>static</code> in front of it, that would only denote internal linkage.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n  static int a;\n  std::cout << a;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"0\".",
+    "output": "0",
+    "reason": "\n<p>Since <code>a</code> is a static local variable, it is automatically initialized to its default value, <code>0</code>. This would not have happened if we removed the keyword <code>static</code>, making it a non-static local variable.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  A() { std::cout << \"a\"; }\n  ~A() { std::cout << \"A\"; }\n};\n\nclass B {\npublic:\n  B() { std::cout << \"b\"; }\n  ~B() { std::cout << \"B\"; }\n};\n\nclass C {\npublic:\n  C() { std::cout << \"c\"; }\n  ~C() { std::cout << \"C\"; }\n};\n\nA a;\nint main() {\n  C c;\n  B b;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"acbBCA\".",
+    "output": "acbBCA",
+    "reason": "\n<p><em>§3.6.2¶4</em> in the standard:<br>\"It is implementation-defined whether the dynamic initialization of a non-local variable with static storage duration is done before the first statement of main. If the initialization is deferred to some point in time after the first statement of main, it shall occur before the first odr-use (3.2) of any function or variable defined in the same translation unit as the variable to be initialized.\"</p>\n\n<p>Since <code>A()</code> is not <code>constexpr</code>, the initialization of <code>a</code> is dynamic. There are two possibilities:<br>- <code>a</code> is initialized before <code>main()</code> is called, i.e. before <code>b</code> or <code>c</code> are initialized.<br>- <code>a</code> is <strong>not</strong> initialized before <code>main()</code>. It is however guaranteed to be initialized before the the use of any function defined in the same translation unit, i.e. before the constructors of <code>b</code> and <code>c</code> are called.</p>\n\n<p>Then, <code>b</code> and <code>c</code> are initialized in order.</p>\n\n<p>Before <code>main()</code> exits, <code>b</code> and <code>c</code> are destructed in the reverse order of their construction. Then, when <code>main()</code> returns, <code>c</code> is destructed as per <em>§3.6.3</em> in the standard:<br>\"Destructors for initialized objects (...) with static storage duration are called as a result of returning from main.\"<br></p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  A() { std::cout << 'a'; }\n  ~A() { std::cout << 'A'; }\n};\n\nclass B {\npublic:\n  B() { std::cout << 'b'; }\n  ~B() { std::cout << 'B'; }\n  A a;\n};\n\nint main() { B b; }\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"abBA\".",
+    "output": "abBA",
+    "reason": "\n<p>Member variables are initialized before the constructor is called. The destructor is called before member variables are destroyed.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  A() { std::cout << 'a'; }\n  ~A() { std::cout << 'A'; }\n};\n\nclass B : public A {\npublic:\n  B() { std::cout << 'b'; }\n  ~B() { std::cout << 'B'; }\n};\n\nint main() { B b; }\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"abBA\".",
+    "output": "abBA",
+    "reason": "\n<p>The base class constructor is called before the inherited constructor. The inherited destructor is called before the base class destructor.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nvoid f(int) { std::cout << 1; }\nvoid f(unsigned) { std::cout << 2; }\n\nint main() {\n  f(-2.5);\n}\n\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>This overload is ambiguous. Why?</p>\n\n<p>There are two viable functions for the call <code>f(-2.5)</code>. For the compiler to select one, one of them needs to be better than the other, or the program is ill-formed. In our case, they are equally good, making the program ill-formed.</p>\n\n<p>According to <em>§13.3.3</em> in the standard, a viable one-argument function is better than another if the conversion sequence for the argument is better. So why isn't the int conversion sequence better than the unsigned conversion sequence, given that the double is signed?</p>\n\n<p>All conversions are given a rank, and both \"double =&gt; int\" and \"double =&gt; unsigned int\" are of type \"floating-integral conversion\", which has rank \"conversion\". See Table 12 in the standard and <em>§4.9.</em> Since they have the same rank, no conversion is better than the other, and the program is ill-formed.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nvoid f(float) { std::cout << 1; }\nvoid f(double) { std::cout << 2; }\n\nint main() {\n  f(2.5);\n  f(2.5f);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"21\".",
+    "output": "21",
+    "reason": "\n<p>The type of a floating point literal is double.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nstruct A {\n  A() { std::cout << \"A\"; }\n};\nstruct B {\n  B() { std::cout << \"B\"; }\n};\n\nclass C {\npublic:\n  C() : a(), b() {}\n\nprivate:\n  B b;\n  A a;\n};\n\nint main()\n{\n    C();\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"BA\".",
+    "output": "BA",
+    "reason": "\n<p>The initialization order of member variables is determined by their order of declaration, not their order in the initialization list.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nstruct A {\n  virtual std::ostream &put(std::ostream &o) const {\n    return o << 'A';\n  }\n};\n\nstruct B : A {\n  virtual std::ostream &put(std::ostream &o) const {\n    return o << 'B';\n  }\n};\n\nstd::ostream &operator<<(std::ostream &o, const A &a) {\n  return a.put(o);\n}\n\nint main() {\n  B b;\n  std::cout << b;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"B\".",
+    "output": "B",
+    "reason": "\n<p>This is a way to get polymorphic behaviour for <code>operator &lt;&lt;</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nstruct A {\n  A() { std::cout << \"A\"; }\n  A(const A &a) { std::cout << \"B\"; }\n  virtual void f() { std::cout << \"C\"; }\n};\n\nint main() {\n  A a[2];\n  for (auto x : a) {\n    x.f();\n  }\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"AABCBC\".",
+    "output": "AABCBC",
+    "reason": "\n<p>When the array is initialized, the default constructor is called once for each of the two objects in it.</p>\n\n<p>Then we iterate over the array using auto, which in our case is deduced to be <code>A</code>. This means the copy constructor will be called before <code>f()</code> for each iteration, printing <code>BCBC</code>. (Just as if we had written <code>for (A x: a)</code>.</p>\n\n<p>If we want to avoid the copy constructor, we can write <code>for (auto&amp; x : a)</code> instead. Then the loop would print <code>CC</code>. (Just as if we had written <code>for (A&amp; x: a)</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nstruct GeneralException {\n  virtual void print() { std::cout << \"G\"; }\n};\n\nstruct SpecialException : public GeneralException {\n  void print() override { std::cout << \"S\"; }\n};\n\nvoid f() { throw SpecialException(); }\n\nint main() {\n  try {\n    f();\n  }\n  catch (GeneralException e) {\n    e.print();\n  }\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"G\".",
+    "output": "G",
+    "reason": "\n<p>We throw a <code>SpecialException</code>. It is derived from <code>GeneralException</code>, but is caught by value, so <code>e</code> will have the dynamic type <code>GeneralException</code>, not <code>SpecialException</code>. This is known as slicing.</p>\n\n<p>Instead, we should have caught it by reference <code>catch (GeneralException&amp; e)</code>, then its dynamic type would be <code>SpecialException</code>, and the program would output <code>S</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n#include <vector>\n\nint main() {\n  std::vector<int> v1(1, 2);\n  std::vector<int> v2{ 1, 2 };\n  std::cout << v1.size() << v2.size();\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"12\".",
+    "output": "12",
+    "reason": "\n<p>To answer this we need to look at overload resolution of vector's constructors:</p>\n\n<p><em>§23.3.6.2¶3</em> says (somewhat redacted):<br><code>vector(size_type n, const T&amp; value);</code><br>Effects: Constructs a <code>vector</code> with <code>n</code> copies of <code>value</code></p>\n\n<p>So <code>v1</code> contains one \"<code>2</code>\".</p>\n\n<p><em>§13.3.1.7</em> says (in summary) that when non-aggregate classes (such as <code>vector</code>) are list-initialized† and have an initializer list constructor (again, like <code>vector</code>), that constructor is chosen, and the argument list consists of the initializer list as a single argument.<br>(†: 8.5.4¶1: List-initialization is initialization of an object or reference from a braced-init-list.)</p>\n\n<p>So <code>v2</code> is initialized from the elements (aka initializer-clauses) in the braced-init-list, and contains the elements \"<code>1</code>\" and \"<code>2</code>\".</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n  int a = 0;\n  decltype(a) b = a;\n  b++;\n  std::cout << a << b;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"01\".",
+    "output": "01",
+    "reason": "\n<p>According to § 7.1.6.2.4 in the C++ standard:<br>\"The type denoted by decltype(e) is deﬁned as follows:<br>— if e is an unparenthesized id-expression [...], decltype(e) is the type of the entity named by e.\"</p>\n\n<p>The type of <code>a</code> is <code>int</code>, so the type of <code>b</code> is also <code>int</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\nstruct X {\n  virtual void f() const { std::cout << \"X\"; }\n};\n\nstruct Y : public X {\n  void f() const { std::cout << \"Y\"; }\n};\n\nvoid print(const X &x) { x.f(); }\n\nint main() {\n  X arr[1];\n  Y y1;\n  arr[0] = y1;\n  print(y1);\n  print(arr[0]);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"YX\".",
+    "output": "YX",
+    "reason": "\n<p><code>arr</code> is an array of <code>X</code>, not of pointers to <code>X</code>. When an object of type <code>Y</code> is stored in it, it is converted to <code>X</code>, and we lose the \"<code>Y</code> part\" of the object. This is commonly known as \"slicing\".</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A;\n\nclass B {\n  B() { std::cout << \"B\"; }\n\npublic:\n  friend B A::createB();\n};\n\nclass A {\npublic:\n  A() { std::cout << \"A\"; }\n\n  B createB() { return B(); }\n};\n\nint main() {\n  A a;\n  B b = a.createB();\n}\n\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>There is a compilation error when attempting to declare <code>A::createB()</code> a friend of <code>B</code>. To declare <code>A::createB()</code> a friend of <code>B</code>, the compiler needs to know that that function exists. Since it has only seen the declaration of <code>A</code> so far, not the full definition, it cannot know this.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n    int i=1;\n    do {\n        std::cout << i;\n        i++;\n        if(i < 3) continue;\n    } while(false);\n    return 0;\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1\".",
+    "output": "1",
+    "reason": "\n<p><em>§6.6.2</em> in the standard: \"The continue statement (...) causes control to pass to the loop-continuation portion of the smallest enclosing iteration-statement, that is, <strong>to the end of the loop</strong>.\" (Not to the beginning.)<br></p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nvoid f(int) { std::cout << \"i\"; }\nvoid f(double) { std::cout << \"d\"; }\nvoid f(float) { std::cout << \"f\"; }\n\nint main() {\n  f(1.0);\n  return 0;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"d\".",
+    "output": "d",
+    "reason": "\n<p>According to <em>§2.14.4¶1</em> in the standard: \"The type of a floating literal is double unless explicitly specified by a suffix.\"<br>The best overload is therefore <code>void f(double)</code>.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nvoid print(char const *str) { std::cout << str; }\nvoid print(short num) { std::cout << num; }\n\nint main() {\n  print(\"abc\");\n  print(0);\n  print('A');\n}\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>Sneaky ambiguous function call.</p>\n\n<p>The statement <code>print(0);</code> is ambiguous due to overload resolution rules. Both <code>print</code> functions are viable, but for the compiler to pick one, one of them has to have a better conversion sequence than the other. <em>§13.3.3¶2</em>:  \"If there is exactly one viable function that is a better function than all other viable functions, then it is the one selected by overload resolution; <strong>otherwise the call is ill-formed</strong>\".</p>\n\n<p>(a) Because <code>0</code> is a null pointer constant[1], it can be converted implicitly into any pointer type with a single conversion.</p>\n\n<p>(b) Because <code>0</code> is of type <code>int</code>, it can be converted implicitly to a <code>short</code> with a single conversion too.</p>\n\n<p>In our case, both are standard conversion sequences with a single conversion of \"conversion rank\". Since no function is better than the other, the call is ill-formed.</p>\n\n<p>[1] <em>§4.10¶1</em> A null pointer constant is an integral constant expression (5.19) prvalue of integer type that evaluates to zero(...) A null pointer constant can be converted to a pointer type.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nint main() {\n  int a = 10;\n  int b = 20;\n  int x;\n  x = a, b;\n  std::cout << x;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"10\".",
+    "output": "10",
+    "reason": "\n<p>The comma operator has the lowest precedence of all C++ operators (specifically lower than <code>=</code>). <br>In this example it separates the two expressions <code>x = a</code> and <code>b</code>.</p>\n\n<p>First <code>x = a</code> is evaluated, setting <code>x</code> to <code>10</code>.<br>Then, <code>b</code> is evaluated, which does nothing.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\nusing namespace std;\n\nint foo() {\n  cout << 1;\n  return 1;\n}\n\nvoid bar(int i = foo()) {}\n\nint main() {\n  bar();\n  bar();\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"11\".",
+    "output": "11",
+    "reason": "\n<p>Is <code>foo</code> called both times or just once? The C++11 standard says this in <em>§8.3.6¶9</em>: \"Default arguments are evaluated each time the function is called.\"</p>\n\n<p>Thus, <code>foo</code> is called twice.</p>\n"
+  },
+  {
+    "difficulty": 1,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  virtual void f() { std::cout << \"A\"; }\n};\n\nclass B : public A {\nprivate:\n  void f() { std::cout << \"B\"; }\n};\n\nvoid g(A &a) { a.f(); }\n\nint main() {\n  B b;\n  g(b);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"B\".",
+    "output": "B",
+    "reason": "\n<p>The \"trick\" here is that <code>B::f()</code> is called even though it is private.</p>\n\n<p>As <em>§11.5.2</em> in the standard puts it: \"Access is checked at the call point using the type of the expression used to denote the object for which the member function is called\". The call point here being <code>a.f()</code>, and the type of the expression is <code>A&amp;</code>.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\nusing namespace std;\n\nclass C {\npublic:\n  explicit C(int) {\n    std::cout << \"i\" << std::endl;\n  };\n  C(double) {\n    std::cout << \"d\" << std::endl;\n  };\n};\n\nint main() {\n  C c1(7);\n  C c2 = 7;\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"id\".",
+    "output": "id",
+    "reason": "\n<p>These are two examples of initialization. The first form, <code>C c1(7)</code>, is called direct-initialization, the second, <code>C c2 = 7</code>, is called copy-initialization. In most cases they are equivalent, but in this example they are not, since the <code>int</code> constructor is <code>explicit</code>.</p>\n\n<p>They key is in 12.3.1¶2 : \"An explicit constructor constructs objects just like non-explicit constructors, but does so only where the direct-initialization syntax (8.5) or where casts (5.2.9, 5.4) are explicitly used.\"</p>\n\n<p>And how is direct-initialization defined?</p>\n\n<p>8.5¶15: \"The initialization that occurs in the forms<br><code>T x(a);</code><br><code>T x{a};</code><br>(...) is called direct-initialization.\"</p>\n\n<p>So the <code>int</code> constructor is not even considered for initialization in the second case. Instead, a standard conversion sequence is used to convert the integer literal to a <code>double</code>, and the <code>double</code> constructor (the only candidate) is used.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <string>\n\nvoid f(const std::string &) { std::cout << 1; }\n\nvoid f(const void *) { std::cout << 2; }\n\nint main() {\n  f(\"foo\");\n  const char *bar = \"bar\";\n  f(bar);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"22\".",
+    "output": "22",
+    "reason": "\n<p>A string literal is not a <code>std::string</code>, but a <code>const char[]</code> . If the compiler was to choose <code>f(const std::string&amp;)</code>, it would have to go through a user defined conversion and create a temporary <code>std::string</code>. Instead, it prefers <code>f(const void*)</code>, which requires no user defined conversion.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\nint main() {\n  std::cout << 1[\"ABC\"];\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"B\".",
+    "output": "B",
+    "reason": "\n<p><em>§5.2.1</em> in the standard says \"The expression E1[E2] is identical (by definition) to *((E1)+(E2))\". In our case <code>1[\"ABC\"]</code> is identical to <code>*(1+\"ABC\")</code>. Since the plus operator is commutative, this is identical to <code>*(\"ABC\"+1)</code>, which is identical to the more familiar <code>\"ABC\"[1]</code>. </p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <initializer_list>\n#include <iostream>\n\nstruct A {\n  A() { std::cout << \"1\"; }\n\n  A(int) { std::cout << \"2\"; }\n\n  A(std::initializer_list<int>) { std::cout << \"3\"; }\n};\n\nint main(int argc, char *argv[]) {\n  A a1;\n  A a2{};\n  A a3{ 1 };\n  A a4{ 1, 2 };\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1133\".",
+    "output": "1133",
+    "reason": "\n<p>According to <em>§8.5.4.3</em> in the C++ standard:</p>\n\n<p>\"List-initialization of an object or reference of type T is deﬁned as follows:<br>— If the initializer list has no elements and T is a class type with a default constructor, the object is value-initialized.<br>— Otherwise, if T is an aggregate, aggregate initialization is performed (<em>§8.5.1</em>).<br>— Otherwise, if T is a specialization of std::initializer_list&lt;E&gt;, an initializer_list object is constructed as described below and used to initialize the object according to the rules for initialization of an object from a class of the same type (<em>§8.5</em>).<br>— Otherwise, if T is a class type, constructors are considered. The applicable constructors are enumerated and the best one is chosen through overload resolution (<em>§13.3</em>, <em>§13.3.1.7</em>). If a narrowing conversion (see below) is required to convert any of the arguments, the program is ill-formed.<br>— (more cases...)\"</p>\n\n<p><code>a1</code> is default initialized, as described in <em>§8.5.0.11</em></p>\n\n<p><code>a2</code> doesn't actually use the initializer_list constructor with a list of zero elements, but the default constructor, as described by the first option of the list above.</p>\n\n<p><code>a3</code>'s and <code>a4</code>'s constructor is chosen in overload resolution, as described in <em>§13.3.1.7</em>:</p>\n\n<p>\"When objects of non-aggregate class type T are list-initialized (<em>§8.5.4</em>), overload resolution selects the constructor in two phases:<br>— Initially, the candidate functions are the initializer-list constructors (<em>§8.5.4</em>) of the class T and the argument list consists of the initializer list as a single argument.<br>— If no viable initializer-list constructor is found, overload resolution is performed again, where the candidate functions are all the constructors of the class T and the argument list consists of the elements of the initializer list.\"</p>\n\n<p>Initializer list constructors are greedy, so even though <code>A(int)</code> constructor is available, the standard mandates that <code>initializer_list&lt;int&gt;</code> is prioritized, and if - and only if - it's not available, the compiler is allowed to look for other constructors. (This is why it is not recommended to provide a constructor that ambiguously overloads with an initializer_list constructor. See the answer to #4 in <a href=\"http://herbsutter.com/2013/05/09/gotw-1-solution/\" rel=\"nofollow\">http://herbsutter.com/2013/05/09/gotw-1-solution/</a> )<br></p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\ntemplate <class T> void f(T &i) { std::cout << 1; }\n\ntemplate <> void f(const int &i) { std::cout << 2; }\n\nint main() {\n  int i = 42;\n  f(i);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1\".",
+    "output": "1",
+    "reason": "\n<p>The templated function will be instantiated as <code>void f(int&amp;)</code>, which is a better match than <code>f(const int&amp;)</code>.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <string>\n#include <future>\n\nint main() {\n  std::string x = \"x\";\n\n  std::async(std::launch::async, [&x]() {\n    x = \"y\";\n  });\n  std::async(std::launch::async, [&x]() {\n    x = \"z\";\n  });\n\n  std::cout << x;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"z\".",
+    "output": "z",
+    "reason": "\n<p>The destructor of a <code>future</code> returned from <code>async</code> is required to block until the <code>async</code> task has finished (see elaboration below). Since we don't assign the <code>future</code>s that are returned from <code>async()</code> to anything, they are destroyed at the end of the full expression (at the end of the line in this case). <em>§12.2¶3</em> in the standard: \"Temporary objects are destroyed as the last step in evaluating the full-expression (1.9) that (lexically) contains the point where they were created.\"</p>\n\n<p>This means that the first async call is guaranteed to finish execution before <code>async()</code> is called the second time, so, while the assignments themselves may happen in different threads, they are synchronized.</p>\n\n<p>Elaboration on synchronization:<br>According to § 30.6.8¶5 of the standard:<br>Synchronization:<br>[...]<br>If the implementation chooses the launch::async policy,<br>— the associated thread completion synchronizes with (1.10) the return from the first function that successfully detects the ready status of the shared state or with the return from the last function that releases the shared state, whichever happens first.</p>\n\n<p>In this case, the destructor of <code>std::future&lt;&gt;</code> returned by the <code>async()</code> call is \"the last function that releases the shared state\", therefore it synchronizes with (waits for) the thread completion.</p>\n\n<p>Scott Meyers writes more about this <a href=\"http://scottmeyers.blogspot.com/2013/03/stdfutures-from-stdasync-arent-special.html\" rel=\"nofollow\">http://scottmeyers.blogspot.com/2013/03/stdfutures-from-stdasync-arent-special.html</a></p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nclass C {\npublic:\n  C(int i) : i(i) { std::cout << i; }\n  ~C() { std::cout << i + 5; }\n\nprivate:\n  int i;\n};\n\nint main() {\n  const C &c = C(1);\n  C(2);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1276\".",
+    "output": "1276",
+    "reason": "\n<p><em>§12.2¶3</em> in the standard: \"Temporary objects are destroyed as the last step in evaluating the full-expression (...) that (lexically) contains the point where they were created.\" This means that normally the temporaries returned from <code>C(1)</code> and <code>C(2)</code> should be destroyed at the end of the line.</p>\n\n<p>However: <em>§12.2¶5</em> states: \"(...)when a reference is bound to a temporary. The temporary to which the reference is bound (...) persists for the lifetime of the reference\", so the lifetime of the temporary returned by <code>C(1)</code> is extended to the end of <code>main()</code>. The temporary returned by <code>C(2)</code> is still destroyed at the end of the line, so it gets destroyed before the one returned by <code>C(1)</code>.<br></p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nstruct A {\n  A() { foo(); }\n  virtual ~A() { foo(); }\n  virtual void foo() { std::cout << \"1\"; }\n  void bar() { foo(); }\n};\n\nstruct B : public A {\n  virtual void foo() { std::cout << \"2\"; }\n};\n\nint main() {\n  B b;\n  b.bar();\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"121\".",
+    "output": "121",
+    "reason": "\n<p>Even though <code>foo()</code> is virtual, it is not considered to be so during the execution of constructors and destructors.</p>\n\n<p>Rationale:</p>\n\n<p>If an object of type <code>B</code> is being constructed, first the constructor of <code>A</code> is called, then the constructor of <code>B</code>. Thus, during <code>A</code>'s constructor, the \"<code>B</code> part\" of the object has not been constructed yet, and should not be used. One could easily imagine that <code>B::foo()</code> would use the \"<code>B</code> part\" of the object, so it would be dangerous for <code>A</code>'s constructor to call it.</p>\n\n<p>When the object is destroyed, <code>B</code>'s destructor is called first, then <code>A</code>'s destructor, leading to the same problem.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nusing namespace std;\n\nclass A {\npublic:\n  A() { cout << \"a\"; }\n  ~A() { cout << \"A\"; }\n};\n\nint i = 1;\n\nint main() {\nlabel:\n  A a;\n  if (i--)\n    goto label;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"aAaA\".",
+    "output": "aAaA",
+    "reason": "\n<p>The Standard says this about jump statements:</p>\n\n<p><em>§6.6¶2</em> Transfer [...] back past an initialized variable with automatic storage duration involves the destruction of variables with automatic storage duration that are in scope at the point transferred from but not at the point transferred to.<br></p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nextern \"C\" int x;\nextern \"C\" { int y; }\n\nint main() {\n\n\tstd::cout << x << y;\n\n\treturn 0;\n}\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>According to <em>§7.5¶7</em> in the standard : A declaration directly contained in a linkage-specification is treated as if it contains the extern specifier (<em>§7.1.1</em>) for the purpose of determining the linkage of the declared name and whether it is a definition.<br></p><pre class=\"sh_cpp sh_sourceCode\">    extern \"C\" int x; //is just a declaration<br>    extern \"C\" { int y; } //is a definition<br></pre><p>The result: <code>x</code> is never defined, the linker will print that, there is an undefined reference.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <vector>\n\nint f() { std::cout << \"f\"; return 0;}\nint g() { std::cout << \"g\"; return 0;}\n\nvoid h(std::vector<int> v) {}\n\nint main() {\n    h({f(), g()});\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"fg\".",
+    "output": "fg",
+    "reason": "\n<p>The goal of this question is to demonstrate that the evaluation order of elements in an initializer list is specified (as opposed to the arguments to a function call).</p>\n\n<p><em>§8.5.4¶4</em>: Within the initializer-list of a braced-init-list, the initializer-clauses, including any that result from pack expansions (<em>§14.5.3</em>), are evaluated in the order in which they appear.</p>\n\n<p>If <code>h</code> took two <code>int</code>s instead of a <code>vector&lt;int&gt;</code>, and was called like this:<br><code>h(f(), g());</code><br>the program would be unspecified, and could either print <code>fg</code> or <code>gf</code>.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nusing namespace std;\n\ntemplate <class T> void f(T) {\n  static int i = 0;\n  cout << ++i;\n}\n\nint main() {\n  f(1);\n  f(1.0);\n  f(1);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"112\".",
+    "output": "112",
+    "reason": "\n<p><em>§14.8¶2</em>: Each function template specialization instantiated from a template has its own copy of any static variable.</p>\n\n<p>This means we get two instantiations of <code>f</code>, one for <code>T</code>=<code>int</code>, and one for <code>T</code>=<code>double</code>. Thus, <code>i</code> is shared between the two <code>int</code> calls, but not with the <code>double</code> call.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <vector>\n#include <iostream>\nusing namespace std;\n\nint main() {\n  std::vector<char> delimiters = { \",\", \";\" };  \n  cout << delimiters[0];\n}\n\n",
+    "answer": "This question is undefined.",
+    "output": "",
+    "reason": "\n<p>Here we are trying to initialize a <code>vector&lt;char&gt;</code> using two string literals, not two <code>char</code>s. </p>\n\n<p>The initializer-list constructor for <code>template &lt;class T&gt;vector</code> is defined as <code>vector(initializer_list&lt;T&gt;)</code> by <em>§23.3.6.1</em> in the standard. In our case, <code>vector(initializer_list&lt;char&gt;)</code>.</p>\n\n<p>The type of a string literal is \"array of <code>n</code> <code>const char</code>\" (<em>§2.14.5¶8</em>), so clearly the initializer-list constructor is not a match.</p>\n\n<p>This problem does however not result in a compiler error, since the compiler is able to find another constructor that matches!</p>\n\n<p><em>§13.3.1.7¶1</em> explains the rules very clearly:<br>\"When objects of non-aggregate class type T are list-initialized, overload resolution selects the constructor in two phases:<br>— Initially, the candidate functions are the initializer-list constructors of the class T and the argument list consists of the initializer list as a single argument [which we have seen didn't match].<br>— If no viable initializer-list constructor is found, overload resolution is performed again, where the candidate functions are all the constructors of the class T and the argument list consists of the elements of the initializer list [in our case, the two string literals <code>\",\"</code> and <code>\";\"</code> ]\".</p>\n\n<p>Going back to <em>§23.3.6.1</em>, we find this candidate:</p>\n\n<p><code>template &lt;class InputIterator&gt; vector(InputIterator first, InputIterator last)</code></p>\n\n<p>Note that the type of <code>InputIterator</code> has no link to the type of <code>T</code> in the <code>vector&lt;T&gt;</code>. So even if we are initializing a <code>vector&lt;char&gt;</code>, the two arguments can be of arbitrary type. The only requirement is that they confirm to the concept of <code>InputIterator</code>, which <code>const char[]</code> happens to do.</p>\n\n<p>Now the constructor believes it has been passed two iterators to the same sequence, but it has actually been passed iterators to two completely different sequences, <code>\",\"</code> and <code>\";\"</code>. <em>§24.2.5¶2</em> says: \"The domain of == for forward iterators is that of iterators over the same underlying sequence.\". So the result of this program is undefined.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <utility>\n\nstruct A\n{\n\tA() { std::cout << \"1\"; }\n\tA(const A&) { std::cout << \"2\"; }\n\tA(A&&) { std::cout << \"3\"; }\n};\n\nstruct B\n{\n\tA a;\n\tB() { std::cout << \"4\"; }\n\tB(const B& b) : a(b.a) { std::cout << \"5\"; }\n\tB(B&& b) : a(b.a) { std::cout << \"6\"; }\n};\n\nint main()\n{\n\tB b1;\n\tB b2 = std::move(b1);\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1426\".",
+    "output": "1426",
+    "reason": "\n<p>First, <code>b1</code> is default initialized. All members are initialized before the body of the constructor, so <code>b1.a</code> is default initialized first, and we get the output <code>14</code>.</p>\n\n<p><em>§12.6.2¶8</em> in the standard: \"In a non-delegating constructor, if a given non-static data member or base class is not designated by a<br>mem-initializer-id (...) then if the entity is a non-static data member that has a brace-or-equal-initializer, the entity is initialized as specified in <em>§8.5</em> (...) otherwise, <strong>the entity is default-initialized.</strong>\"</p>\n\n<p>Then, <code>b2</code> is initialized with the move construcor (since <code>std::move(b1)</code>converts the reference to <code>b1</code> to an xvalue, allowing it to be moved from.) In <code>B</code>'s move constructor, <code>a</code> is initialized in the initializer list. Even though <code>a</code> is an rvalue reference (and bound to an rvalue), <code>a</code> itself is an lvalue, and cannot be moved from. <code>b2.a</code> is then copy initialized, printing <code>2</code>, and finally the body of <code>B</code>'s move constructor prints <code>6</code>.</p>\n\n<p>(If the concept of rvalue references being lvalues is confusing, read <a href=\"http://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers\" rel=\"nofollow\">http://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers</a> . Search for \"In widget\".)</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nstruct X {\n  X() { std::cout << \"a\"; }\n  X(const X &x) { std::cout << \"b\"; }\n  const X &operator=(const X &x) {\n    std::cout << \"c\";\n    return *this;\n  }\n};\n\nint main() {\n  X x;\n  X y(x);\n  X z = y;\n  z = x;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"abbc\".",
+    "output": "abbc",
+    "reason": "\n<p>The first line in <code>main()</code>, <code>X x;</code> is straightforward, it calls the default constructor.</p>\n\n<p>The next two lines is the heart of the question: The difference between <code>X y(x)</code> and <code>X z = y</code> is not that the first calls the copy constructor, and the second calls the copy assignment operator. The difference is that the first is direct initialization (<em>§8.5.15</em> in the standard)  and the second is copy initialization (<em>§8.5.14</em>).</p>\n\n<p><em>§8.5.16</em> says: \"If the initialization is direct-initialization, or if it is copy-initialization where the (...) source type is the same class as (...) the class of the destination, constructors are considered.\" So both our cases use the copy constructor.</p>\n\n<p>Not until <code>z = x;</code> do we have an actual assignment that uses the assignment operator.</p>\n\n<p>See <a href=\"http://stackoverflow.com/questions/1051379/is-there-a-difference-in-c-between-copy-initialization-and-direct-initializati/1051468#1051468\" rel=\"nofollow\">http://stackoverflow.com/questions/1051379/is-there-a-difference-in-c-between-copy-initialization-and-direct-initializati/1051468#1051468</a> for a more detailed discussion of direct vs. copy initialization.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <utility>\n\nint y(int &) { return 1; }\nint y(int &&) { return 2; }\n\ntemplate <class T> int f(T &&x) { return y(x); }\ntemplate <class T> int g(T &&x) { return y(std::move(x)); }\ntemplate <class T> int h(T &&x) { return y(std::forward<T>(x)); }\n\nint main() {\n  int i = 10;\n  std::cout << f(i) << f(20);\n  std::cout << g(i) << g(20);\n  std::cout << h(i) << h(20);\n  return 0;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"112212\".",
+    "output": "112212",
+    "reason": "\n<p>The <code>T&amp;&amp;</code> in the the templated functions do not necessarily denote an rvalue reference, it depends on the type that is used to instantiate the template. If instantiated with an lvalue, it collapses to an lvalue reference, if instantiated with an rvalue, it collapses to an rvalue reference. See note [1].</p>\n\n<p>Scott Meyers has written a very good article about this, where he introduces the concept of \"universal references\" (note that this is not C++ standard wording) <a href=\"http://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers\" rel=\"nofollow\">http://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers</a></p>\n\n<p>In this example, all three functions are called once with an lvalue and once with an rvalue. In all cases, calling with an lvalue (<code>i</code>) collapses <code>T&amp;&amp; x</code> to <code>T&amp; x</code> (an lvalue reference), and calling with an rvalue (<code>20</code>) collapses <code>T&amp;&amp; x</code> to <code>T&amp;&amp; x</code> (an rvalue reference). Inside the functions, <code>x</code> itself is always an lvalue, no matter if its type is an rvalue reference or an lvalue reference.</p>\n\n<p>-For the first example, <code>y(int&amp;)</code> is called for both cases. Output: <code>11</code>.<br>-For the second example, <code>move(x)</code> obtains an rvalue reference, and <code>y(int&amp;&amp;)</code>is called for both cases. Output: <code>22</code>.<br>-For the third example, <code>forward&lt;T&gt;(x)</code> obtains an lvalue reference when <code>x</code> is an lvalue reference, and an rvalue reference when <code>x</code> is an rvalue reference, resulting in first a call to <code>y(int&amp;)</code>and then a call to <code>y(int&amp;&amp;)</code>. Output: <code>12</code>.</p>\n\n<p>Note [1]: <em>§8.3.2¶6</em> in the standard: \"If a (...) type template-parameter (<em>§14.3.1</em>) (...) denotes a type <code>TR</code> that is a reference to a type <code>T</code>, an attempt to create the type “lvalue reference to cv <code>TR</code>” creates the type<br>“lvalue reference to <code>T</code>”, while an attempt to create the type “rvalue reference to cv <code>TR</code>” creates the type <code>TR</code>.\" The example at the end of that paragraph is is worth a look. </p>\n\n<p>Note from the contributor: This demonstrates Scott Meyers's advice that use std::forward for universal references, and std::move for rvalue references.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nint main() {\n  int a = 10;\n  int b = 20;\n  int x;\n  x = (a, b);\n  std::cout << x;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"20\".",
+    "output": "20",
+    "reason": "\n<p>The comma operator is applied on two expressions: <code>a</code> and <code>b</code>.</p>\n\n<p>According to <em>§5.18¶10</em> in the standard: \"A pair of expressions separated by a comma is evaluated left-to-right; the left expression is a discarded-value expression (...) The type and value of the result are the type and value of the right operand\"</p>\n\n<p>So first <code>a</code> is evaluated, yielding the value <code>10</code> which is then discarded. Then <code>b</code> is evaluated, yielding the value <code>20</code>, which is then the resulting value of the <code>(a, b)</code>, and assigned to <code>x</code>.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n#include <limits>\n\nint main() {\n  int i = std::numeric_limits<int>::max();\n  std::cout << ++i;\n}\n\n",
+    "answer": "This question is undefined.",
+    "output": "",
+    "reason": "\n<p>Signed integer overflow is undefined behaviour according to the standard <em>§5.4</em>: \"If during the evaluation of an expression, the result is not mathematically defined or not in the range of representable values for its type, the behavior is undefined.\"</p>\n\n<p>Most implementations will just wrap around, so if you try it out on your machine, you will probably see the same as if you had done<br><code>std::cout &lt;&lt; std::numeric_limits&lt;int&gt;::min();</code></p>\n\n<p>Relying on such undefined behaviour is however _not_ safe. For an interesting example, see <a href=\"http://stackoverflow.com/questions/7682477/why-does-integer-overflow-on-x86-with-gcc-cause-an-infinite-loop\" rel=\"nofollow\">http://stackoverflow.com/questions/7682477/why-does-integer-overflow-on-x86-with-gcc-cause-an-infinite-loop</a></p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nint main() {\n  void * p = &p;\n  std::cout << bool(p);\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"1\".",
+    "output": "1",
+    "reason": "\n<p>As defined in <em>§3.3.2¶1</em>, the point of name declaration is after its<br>complete declarator and before its initialisation. This<br>means that line 4 is valid C++, because it's possible<br>to initialise the variable <code>p</code> with the address of an existing<br>variable, even if it is its own address.</p>\n\n<p>The value of <code>p</code> is unknown, but can not be a null pointer value. The<br>cast must thus evaluate to 1 and initialise the temporary<br>bool as true.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nclass A {\npublic:\n  A() { std::cout << \"a\"; }\n  ~A() { std::cout << \"A\"; }\n};\n\nclass B {\npublic:\n  B() { std::cout << \"b\"; }\n  ~B() { std::cout << \"B\"; }\n};\n\nclass C {\npublic:\n  C() { std::cout << \"c\"; }\n  ~C() { std::cout << \"C\"; }\n};\n\nA a;\n\nvoid foo() { static C c; }\nint main() {\n  B b;\n  foo();\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"abcBCA\".",
+    "output": "abcBCA",
+    "reason": "\n<p><em>§3.6.2¶4</em> in the standard:<br>\"It is implementation-defined whether the dynamic initialization of a non-local variable with static storage duration is done before the first statement of main. If the initialization is deferred to some point in time after the first statement of main, it shall occur before the first odr-use (3.2) of any function or variable defined in the same translation unit as the variable to be initialized.\"</p>\n\n<p>Since <code>A()</code> is not <code>constexpr</code>, the initialization of <code>a</code> is dynamic. There are two possibilities:<br>- <code>a</code> is initialized before <code>main()</code> is called, i.e. before <code>b</code> is initialized.<br>- <code>a</code> is <strong>not</strong> initialized before <code>main()</code>. It is however guaranteed to be initialized before the the use of any function defined in the same translation unit, i.e. before the constructor of <code>b</code> is called.</p>\n\n<p>When execution reaches <code>B b</code>, it is initialized as normal. Static local variables are initialized the first time control passes through their declaration, so <code>c</code> is initialized next. As <code>main()</code> is exited, its local variable <code>b</code> goes out of scope, and is destroyed. Finally, all static variables are destroyed in reverse order of their initialization, first <code>c</code>, then <code>a</code>.</p>\n"
+  },
+  {
+    "difficulty": 2,
+    "code": "#include <iostream>\n\nint main() {\n  int a = 0;\n  decltype((a)) b = a;\n  b++;\n  std::cout << a << b;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"11\".",
+    "output": "11",
+    "reason": "\n<p>According to § 7.1.6.2.4 in the C++ standard:<br>\"The type denoted by decltype(e) is deﬁned as follows:<br>— if e is an unparenthesized id-expression or an unparenthesized class member access (5.2.5), decltype(e) is the type of the entity named by e. If there is no such entity, or if e names a set of overloaded functions, the program is ill-formed;<br>— otherwise, if e is an xvalue, decltype(e) is T&amp;&amp;, where T is the type of e;<br>— otherwise, if e is an lvalue, decltype(e) is T&amp;, where T is the type of e;<br>— otherwise, decltype(e) is the type of e.\"</p>\n\n<p>Because <code>a</code> is encapsulated in parentheses, it doesn't qualify for the first case, it is treated as an lvalue, therefore <code>b</code>'s type is <code>int&amp;</code>, not <code>int</code>.</p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\n\ntemplate <template <typename> class>\nstruct X {\n  X() { std::cout << \"1\"; }\n};\n\ntemplate <typename>\nstruct Y {};\n\ntemplate <typename T>\nusing Z = Y<T>;\n\ntemplate <>\nstruct X<Y> {\n  X() { std::cout << \"2\"; }\n};\n\nint main() {\n  X<Y> x1;\n  X<Z> x2;\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"21\".",
+    "output": "21",
+    "reason": "\n<p><code>X</code> takes a template template parameter[1], meaning that any template argument for X needs to itself take a template parameter. For instance, you cannot do <code>X&lt;int&gt;</code>, but you can do <code>X&lt;Y&gt;</code>, since <code>Y</code> itself is a template. There are two definitions of <code>X</code>, first the general template one, then the specialization <code>X&lt;Y&gt;</code>. </p>\n\n<p><code>Y</code> is a normal template.</p>\n\n<p><code>Z</code> is a template alias declaration, meaning that <code>Z</code> is now an alias for <code>Y</code> (think of template aliases as a \"<code>typedef</code> for templates\").</p>\n\n<p>Now let's look at <code>main()</code>:<br>Defining a variable of type <code>X&lt;Y&gt;</code> uses that specialization (printing <code>2</code>). But what happens when we use a template alias, as in <code>X&lt;Z&gt;</code>? Is the specialization <code>X&lt;Y&gt;</code> still used, since <code>Z</code> is an alias for <code>Y</code>?</p>\n\n<p>No. According to <em>§14.5.7¶1</em> in the standard, a template alias declaration resolve to a new family of types. The specialization cannot be used, and the first template delcaration is used instead, printing <code>1</code>.</p>\n\n<p>[1]: For a good introduction to template template parameters, see <a href=\"http://www.informit.com/articles/article.aspx?p=376878\" rel=\"nofollow\">http://www.informit.com/articles/article.aspx?p=376878</a></p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream> \n\ntypedef long long ll;\n\nvoid foo(unsigned ll) {\n    std::cout << \"1\";\n}\n\nvoid foo(unsigned long long) {\n    std::cout << \"2\";\n}\n\nint main() {\n    foo(2ull);\n}\n",
+    "answer": "This question is compilable and deterministic. Its output is \"2\".",
+    "output": "2",
+    "reason": "\n<p><em>§7.1¶2</em> in the C++11 standard states, \"If a type-name is encountered while parsing a decl-speciﬁer-seq, it is interpreted as part of the decl-speciﬁer-seq if and only if there is no previous type-speciﬁer other than a cv-qualiﬁer in the decl-speciﬁer-seq.\" </p>\n\n<p><em>§7.1¶3</em> also has a note: \"Since signed, unsigned, long, and short by default imply int, a type-name appearing after one of those speciﬁers is treated as the name being (re)declared.\"</p>\n\n<p>In <code>void foo(unsigned ll)</code>, since <code>unsigned</code> implies <code>int</code>, <code>ll</code> is being redeclared as a parameter name.</p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\n\nusing namespace std;\n\nstruct A {};\nstruct B {};\n\ntemplate<typename T = A>\nstruct X;\n\ntemplate<>\nstruct X<A> {\n   static void f() { cout << 1 << endl; }\n};\n\ntemplate<>\nstruct X<B> {\n   static void f() { cout << 2 << endl; }\n};\n\ntemplate< template<typename T = B> class C>\nvoid g() {\n   C<>::f();\n}\n\nint main() {\n   g<X>();\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"2\".",
+    "output": "2",
+    "reason": "\n<p>The standard (<em>§14.1¶14</em>) says: \"A template-parameter of a template template-parameter is permitted to have a default template-argument.<br>When such default arguments are specified, they apply to the template template-parameter in the scope of<br>the template template-parameter.\"</p>\n\n<p>In this case, the template template-parameter is C, and the scope of C is the function g(), so the default arguments of C (i.e. T = B) are applied and C&lt;B&gt;::f() is called inside g().</p>\n\n<p></p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <functional>\n#include <iostream>\n\ntemplate <typename T>\nvoid call_with(std::function<void(T)> f, T val)\n{\n\tf(val);\n}\n\nint main()\n{\n\tauto print = [] (int x) { std::cout << x; };\n\tcall_with(print, 42);\n}\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>The compiler tries to deduce <code>T</code> for every parameter and checks if the deduced types match. Because a lambda is of completely different type, it cannot be matched against <code>std::function&lt;void(T)&gt;</code> and the deduction process fails.<br>This problem can be fixed by turning the first parameter into a so-called nondeduced context.</p>\n\n<p><em>§14.8.2.5¶5</em> in the standard:<br>\"The nondeduced contexts are:</p>\n\n<p>- The nested-name-specifier of a type that was specified using a qualified-id.<br>- (...)</p>\n\n<p>When a type name is specified in a way that includes a nondeduced context, all of the types that comprise that type name are also nondeduced. However, a compound type can include both deduced and nondeduced types. [Example: If a type is specified as <code>A&lt;T&gt;::B&lt;T2&gt;</code>, both <code>T</code> and <code>T2</code> are nondeduced. Likewise, if a type is specified as <code>A&lt;I+J&gt;::X&lt;T&gt;</code>, <code>I</code>, <code>J</code>, and <code>T</code> are nondeduced. If a type is specified as <code>void f(typename A&lt;T&gt;::B, A&lt;T&gt;)</code>, the <code>T</code> in <code>A&lt;T&gt;::B</code> is nondeduced but the <code>T</code> in <code>A&lt;T&gt;</code> is deduced. ]\"</p>\n\n<p>In particular, a helper struct template that typedefs the template parameter can be used:<br></p><pre class=\"sh_cpp sh_sourceCode\">    template &lt;typename T&gt;<br>    struct identity<br>    {<br>        typedef T type;<br>    };<br></pre><p>This helper struct can then turn <code>std::function&lt;void(T)&gt;</code> into a nondeduced context as shown in the standard:<br></p><pre class=\"sh_cpp sh_sourceCode\">    template &lt;typename T&gt;<br>    void call_with(typename identity&lt;std::function&lt;void(T)&gt;&gt;::type f, T val)<br>    {<br>        f(val);<br>    }<br></pre><p>Note that <code>identity</code> is in namespace <code>std</code> in some stdlib implementations, but it not actually part of the C++11 standard.</p>\n\n<p>The problem can also be solved in a less general way (at each call site) by explicitly specifying the template argument:</p>\n\n<p></p><pre class=\"sh_cpp sh_sourceCode\">    call_with&lt;int&gt;(print, 42);<br></pre><p><br></p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\n#include <type_traits>\n\nusing namespace std;\n\nint main()\n{\n  int i, &j = i;\n  [=]\n  {\n    cout << is_same<decltype    ((j)),     int         >::value\n         << is_same<decltype   (((j))),    int      &  >::value\n         << is_same<decltype  ((((j)))),   int const&  >::value\n         << is_same<decltype (((((j))))),  int      && >::value\n         << is_same<decltype((((((j)))))), int const&& >::value;\n  }();\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"00100\".",
+    "output": "00100",
+    "reason": "\n<p><em>§5.1.2¶18</em> says<br>Every occurrence of <code>decltype((x))</code> where <code>x</code> is a possibly parenthesized id-expression that names an entity of automatic storage duration is treated as if <code>x</code> were transformed into an access to a corresponding data member of the closure type that would have been declared if <code>x</code> were an odr-use of the denoted entity.</p>\n\n<p>So additional parentheses, as the in the code snippet above, are ignored.</p>\n\n<p>The member of the closure type corresponding to the as-if-captured <code>j</code> will be not a reference, but will have the referenced type of the reference, since it is captured by copy (<em>§5.1.2¶14</em>).</p>\n\n<p>Since the lambda is not declared <code>mutable</code>, the overloaded <code>operator()</code> of the closure type will be a const member function. 5.1.2¶5: \"The closure type for a lambda-expression has a public inline function call operator (...) This function call operator is declared const if and only if the lambda-expression’s parameter-declaration-clause is not followed by mutable.\"<br> <br>Since the expression for <code>decltype</code> is a parenthesized lvalue expression, <em>§7.1.6.2¶4</em> has this to say: \"The type denoted by decltype(e) is (...)  T&amp;, where T is the type of e;\" As the expression occurs inside a const member function, the expression is const, and <code>decltype((j))</code> denotes <code>int const&amp;</code>. See also the example in <em>§5.1.2¶18</em>.<br></p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\n\nstruct X {\n  X() { std::cout << \"X\"; }\n};\n\nstruct Y {\n  Y(const X &x) { std::cout << \"Y\"; }\n  void f() { std::cout << \"f\"; }\n};\n\nint main() {\n  Y y(X());\n  y.f();\n}\n\n",
+    "answer": "This question has a compilation error.",
+    "output": "",
+    "reason": "\n<p>The compilation error is on the line <code>y.f()</code>, but the source of the problem is <code>Y y(X());</code></p>\n\n<p>This could be interpreted as a a variable definition (which was the intention of the programmer in this example), or as a definition of a function <code>y</code>, returning an object of type <code>Y</code>, taking a function (with no arguments, returning an object of type <code>X</code>) as its argument.</p>\n\n<p>The compiler is required by the standard to choose the second interpretation, which means that <code>y.f()</code> does not compile (since <code>y</code> is now a function, not an object of type <code>Y</code>).</p>\n\n<p>Wikipedia has a concise explanation: <a href=\"http://en.wikipedia.org/wiki/Most_vexing_parse\" rel=\"nofollow\">http://en.wikipedia.org/wiki/Most_vexing_parse</a>, and the standard has more in <em>§6.8.</em></p>\n\n<p>To fix the problem, change <code>Y y(X())</code> to either <code>Y y{X{}}</code> (modern C++) or <code>Y y((X()))</code> (pre-C++11)</p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\nusing namespace std;\n\ntemplate<typename T>\nvoid adl(T)\n{\n  cout << \"T\";\n}\n\nstruct S\n{\n};\n\ntemplate<typename T>\nvoid call_adl(T t)\n{\n  adl(S());\n  adl(t);\n}\n\nvoid adl(S)\n{\n  cout << \"S\";\n}\n\nint main ()\n{\n  call_adl(S());\n}\n\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"TS\".",
+    "output": "TS",
+    "reason": "\n<p><em>§14.6¶9</em> states: \"When looking for the declaration of a name used in a template definition, the usual lookup rules (<em>§3.4.1</em>, <em>§3.4.2</em>) are used for non-dependent names. The lookup of names dependent on the template parameters is postponed until the actual template argument is known (<em>§14.6.2</em>).\"</p>\n\n<p>The first call to <code>adl</code> is a non-dependent call, so it is looked up at the time of definition of the function template. The resolution of the second call is deferred until the template is instantiated because it depends on a template parameter.</p>\n\n<p></p><pre class=\"sh_cpp sh_sourceCode\">    template&lt;typename T&gt; void call_adl_function(T t)<br>    {<br>        adl(S()); // Independent, looks up adl now.<br>        adl(t); // Dependent, looks up adl later.<br>    }<br></pre><p><br>When <code>adl</code> is being looked up at the time of definition of the function template, the only version of <code>adl</code> that exists is the templated <code>adl(T)</code>. Specifically, <code>adl(S)</code> does not exist yet, and is not a candidate. </p>\n\n<p>Note: This program does not work in Visual Studio's C++ compiler.</p>\n"
+  },
+  {
+    "difficulty": 3,
+    "code": "#include <iostream>\n#include <exception>\n\nint x = 0;\n\nclass A {\npublic:\n  A() {\n    std::cout << 'a';\n    if (x++ == 0) {\n      throw std::exception();\n    }\n  }\n  ~A() { std::cout << 'A'; }\n};\n\nclass B {\npublic:\n  B() { std::cout << 'b'; }\n  ~B() { std::cout << 'B'; }\n  A a;\n};\n\nvoid foo() { static B b; }\n\nint main() {\n  try {\n    foo();\n  }\n  catch (std::exception &) {\n    std::cout << 'c';\n    foo();\n  }\n}\n\n",
+    "answer": "This question is compilable and deterministic. Its output is \"acabBA\".",
+    "output": "acabBA",
+    "reason": "\n<p>Static local variables are initialized the first time control passes through their declaration. The first time <code>foo()</code> is called, <code>b</code> is attempted initialized. Its constructor is called, which first constructs all member variables. This means <code>A::A()</code> is called, printing <code>a</code>. <code>A::A()</code> then throws an exception, the constructor is aborted, and neither <code>b</code> or <code>B::a</code> are actually considered constructed. In the catch-block, <code>c</code> is printed, and then <code>foo()</code> is called again. Since <code>b</code> was never initialized the first time, it tries again, this time succeeding, printing <code>ab</code>. When <code>main()</code> exits, the static variable <code>b</code> is destroyed, first calling the destructor printing <code>B</code>, and then destroying member variables, printing <code>A</code>. </p>\n"
+  }
+]
